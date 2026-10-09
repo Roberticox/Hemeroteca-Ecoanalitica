@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hemeroteca | Ecoanalítica</title>
+    <style>
+        :root {
+            --bg-page: rgba(36, 28, 166, 0.06); 
+            --card-bg: #ffffff;
+            --brand-blue: #241ca6; 
+            --primary-dark: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: rgba(36, 28, 166, 0.15); 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-image: url('fondo.png'); 
+            background-color: var(--brand-blue);
+            background-size: cover;
+            background-position: center;
+            box-shadow: inset 0 0 0 1000px rgba(18, 14, 83, 0.7);
+            padding: 3.5rem 2rem;
+            text-align: center;
+            color: #ffffff;
+            border-bottom: 4px solid var(--brand-blue);
+        }
+
+        .header-logo {
+            max-width: 320px;
+            height: auto;
+            margin-bottom: 1rem;
+            mix-blend-mode: screen; 
+        }
+
+        .header-title {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #f8fafc;
+            text-transform: uppercase;
+        }
+
+        .meta-info {
+            display: inline-block;
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .filters-container {
+            max-width: 1100px;
+            margin: -2.5rem auto 1.5rem auto;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 10;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(36, 28, 166, 0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* --- Estilos del Nuevo Buscador --- */
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 20px 12px 40px;
+            border-radius: 25px;
+            border: 1px solid rgba(36, 28, 166, 0.2);
+            outline: none;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+        }
+
+        .search-input:focus {
+            border-color: var(--brand-blue);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(36, 28, 166, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background: rgba(36, 28, 166, 0.05);
+            border: 1px solid rgba(36, 28, 166, 0.2);
+            color: var(--brand-blue);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: capitalize;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(36, 28, 166, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--brand-blue);
+            color: #ffffff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 4px 6px rgba(36, 28, 166, 0.2);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto 3rem auto;
+            padding: 0 2rem;
+            min-height: 50vh; /* Evita que el footer suba de golpe si no hay resultados */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.8rem;
+        }
+
+        /* --- Animaciones Suaves de las Tarjetas --- */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            
+            /* Esta es la clave para la transición fluida */
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(36, 28, 166, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 12px 20px -3px rgba(36, 28, 166, 0.15);
+        }
+
+        /* Clase temporal que da el efecto de desaparición */
+        .card.hiding {
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        /* Clase final que retira el espacio del HTML */
+        .hidden {
+            display: none !important;
+        }
+
+        .card-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(36, 28, 166, 0.08);
+        }
+
+        .badge {
+            background: rgba(36, 28, 166, 0.1);
+            color: var(--brand-blue);
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            line-height: 1.4;
+            color: var(--primary-dark);
+        }
+
+        .card-summary {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(36, 28, 166, 0.08);
+        }
+
+        .source-name {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .card-link {
+            text-decoration: none;
+            color: var(--brand-blue);
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        .card-link:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+        
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="Ecoanalítica" class="header-logo">
+        <h1 class="header-title">Hemeroteca Digital Automatizada</h1>
+        <div class="meta-info">
+            Última actualización: 09/10/2026 16:07 &nbsp;|&nbsp; Total artículos: 12
+        </div>
+    </header>
+
+    <div class="filters-container">
+        <!-- Buscador de texto en tiempo real -->
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar por título, contenido, fecha o medio...">
+        </div>
+
+        <!-- Botones generados dinámicamente -->
+        <div class="btn-group">
+            <button class="filter-btn active" data-filter="all">Todas</button>
+            
+                <button class="filter-btn" data-filter="ecoanalítica">ecoanalítica</button>
+            
+                <button class="filter-btn" data-filter="alejandro grisanti">alejandro grisanti</button>
+            
+                <button class="filter-btn" data-filter="Graciela Urdaneta">Graciela Urdaneta</button>
+            
+                <button class="filter-btn" data-filter="banco central de venezuela">banco central de venezuela</button>
+            
+                <button class="filter-btn" data-filter="economía">economía</button>
+            
+                <button class="filter-btn" data-filter="inflación">inflación</button>
+            
+                <button class="filter-btn" data-filter="dólar">dólar</button>
+            
+                <button class="filter-btn" data-filter="dolarización">dolarización</button>
+            
+        </div>
+    </div>
+
+    <div class="container">
+        <main class="grid" id="news-grid">
+            <div id="no-results-msg" class="no-results">
+                No se encontraron noticias con esos filtros de búsqueda.
+            </div>
+            
+            
+            <article class="card" data-tags="dolarización">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Thu, 08 Oct 2026 18:49:34 GMT</span>
+                    </div>
+                    <h2 class="card-title">Delcy Rodríguez descarta la dolarización: "La soberanía monetaria es esencial para el crecimiento económico"</h2>
+                    <div class="card-summary">Delcy Rodríguez descarta la dolarización: "La soberanía monetaria es esencial para el crecimiento económico"&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMi0wFBVV95cUxQc2gyQzIwck5OUEtXY2xHSlhLcmpQdXVyOWNpSUpYdkowUHBSVGhud0NIOVpXN3pZQ1E1dkxPTnRjU2M3SFZjSUtqb2hJczlRUzNodnZwcTdhMjBNX2IwNkhrVGQ0WndkRzRmNUVkV1d4bm45Tzdvb1RManlpVS1SYUV6LWhpUERyaXBGMkIxT3RmQ0lGX1dGSjBRb3dqU3pnZkNmTmgyd1JLclJQWFpIT3dZbFpUX0VzekVWc2VTS1MzN3loSmpzb2Z2WkZMS0tNY25r?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="dólar">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Thu, 08 Oct 2026 23:34:34 GMT</span>
+                    </div>
+                    <h2 class="card-title">Banco Central de Argentina pierde 1.000 millones de dólares en operación respaldada con oro</h2>
+                    <div class="card-summary">Banco Central de Argentina pierde 1.000 millones de dólares en operación respaldada con oro&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMivwFBVV95cUxNVVgtaFBRS3FmaFhIWTcycjVhNlNVQ3lSNUZWNXBpMEd6Tmd3eFFQN0pIYjBVWmdYSjZjazZtREJqeUJvZm1fUkExbktkNmFlcVJVd1NpSjFaOGxweFlkdTJvbEdIT0dRaXE2MXdicE5Vc0EtY2Q0aUV4VmhLbm5XZWR2MU0ydHpuajRtVEhfbElUSV8zYmlET05VT0NpVzAwa29JdjRhNUpPVXp2MVB5elpVNHozZGZWNGQ3eFpRcw?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="inflación">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Thu, 08 Oct 2026 20:01:58 GMT</span>
+                    </div>
+                    <h2 class="card-title">Bolsa de Caracas transó más de US$280 millones en septiembre y su rendimiento superó a la inflación</h2>
+                    <div class="card-summary">Bolsa de Caracas transó más de US$280 millones en septiembre y su rendimiento superó a la inflación&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMiygFBVV95cUxNZ0dIZmtNS2hvNEdjM0hjejA3WlFUQllWX2JFanNrc3B5WUpKbUcwR2hRYjdlMF8yMTY0SVItc3VzWkRmZC02WXEzQkFwNElnLWYxem4yanhpRG53QjJ5RXBUS2pTVklzX2hlejlHMDhVWFFWUG5waUxwX2I4dC1IcFIwY1g4eEs0MnlxbmlhcEhJWWdMazhEVWJyckExeXdSdTItN1M0OXhRSm9RY21JdWQzNlFZbXNwQUotVUVxQ19QbkhEeFR6ZV9R?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="inflación">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Thu, 08 Oct 2026 11:34:21 GMT</span>
+                    </div>
+                    <h2 class="card-title">Inflación interanual de Colombia crece levemente en septiembre hasta el 6,29%</h2>
+                    <div class="card-summary">Inflación interanual de Colombia crece levemente en septiembre hasta el 6,29%&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMivwFBVV95cUxPSF8wMjAtNlhuNW9adWxHekx5V3VBaGtKLTBDaU1vNDlSTUp5YVZQbEhabE1DUkNickx4NHItc1BYNUJGQk1iSW5ZWDQ1OEtUWlMtaUZ2aEZTNjQxTDNZMHprb3ZxRmw5SEt5cDg2NXlLVzg0Z0tiMlVWWENEdHlYYmpsN2h4ZVFaOHVJeDBGMGpnUGRPVDIzbUJJQW5lclRrWmxUWkMxWEgzOVlJVlQwalpaZUh6aXpiMjRqX0N5RQ?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="dólar">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Tue, 06 Oct 2026 17:04:01 GMT</span>
+                    </div>
+                    <h2 class="card-title">ConocoPhillips: Venezuela podría necesitar una década y miles de millones de dólares para recuperar su industria petrolera</h2>
+                    <div class="card-summary">ConocoPhillips: Venezuela podría necesitar una década y miles de millones de dólares para recuperar su industria petrolera&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMi6AFBVV95cUxNOTlKbDZIX1JzS2xNNFoySkt2eVNVXzR3V0FGR2thdXE2UDRnVkh0RUJpSWNXNTMyN1pud1ZpTGNzYUVpaGJ2eFpFOE5Zdks1R2g3bUUxbnRhQzFlbjJmSERja1JuQmdqYVdJZ3lqcVFVWU1wS0stcDFhbDZKemRrclc3dGM5Q3ViaU5wMnFUeXF4NGNhWU40eUhuUkY2ZFU5VmxaTXFmdndyQTd6R2g0RlMzckg0NVd6RWFhazBzZFF6V1Zsc1pyT2FTNkg0V2hjUEhXY19XUzBiUzBwTVFiclZiWnFRaTRh?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="economía">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Tue, 06 Oct 2026 16:49:01 GMT</span>
+                    </div>
+                    <h2 class="card-title">"Es crucial para nuestra economía industrial": Llegaron a EEUU las 15.000 toneladas de aluminio enviadas desde Venezuela</h2>
+                    <div class="card-summary">"Es crucial para nuestra economía industrial": Llegaron a EEUU las 15.000 toneladas de aluminio enviadas desde Venezuela&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMi4gFBVV95cUxQNFlRejZHVlZSbFJpRk1aV3pJaXZZby1pNjA2TUQ3TUdiTWZlNW9XbWtpUXFadEJlSlJaeFpyVVZwMjJEMC1DTFVYdnJ4TkFJQ3pfQkxycmdFNTBQUXZjOHhrbGF6MnhNMHo2eWpOOWF5dlZTaXNnOV9hNDFSTUF4bWVwbGZCMU5RbWFrS0dZSHBaYUQzdVpycEhtMkZTUjdEd2RqZkJjaFBXZ0tXbnREY2pLaTFGRzNmeFZvM05Ea1U0N1p4N1AxWjhUNUVBR2JIX1BqM0tRZkpvbjQ5UWdoT2tB?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="dólar">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Tue, 06 Oct 2026 15:49:01 GMT</span>
+                    </div>
+                    <h2 class="card-title">José Antonio Kast envía Presupuesto 2027 y pide autorizar 25.000 millones de dólares de deuda</h2>
+                    <div class="card-summary">José Antonio Kast envía Presupuesto 2027 y pide autorizar 25.000 millones de dólares de deuda&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMiwgFBVV95cUxNeU1TaGNOSWdpcG9MSFlBZEVSVVRqN1pKMDdOMGR6X3ExaDFvbHRwbVV1bDZ4a0tUdE01RUVqRzVIQ01BZktrbE1JMUxBMmlyWlFWMFRTYTdobmIyMG1PWVcwSnlKeFhVa0FOZ0dZcTFlcV83bWp5LW9aRW1tcEZRdmRSNllLUVByUHVTcF9mUHFuUmwyNXpxdUlvV3lEdWJkYXUxbHJSZUJGa2NuU1ZmQVlQRmJkSHI5MDc2QmpZeFBuQQ?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="dólar">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Tue, 06 Oct 2026 21:18:03 GMT</span>
+                    </div>
+                    <h2 class="card-title">El petróleo de Texas vuelve a cerrar en 89 dólares pendiente del tráfico en Oriente Medio</h2>
+                    <div class="card-summary">El petróleo de Texas vuelve a cerrar en 89 dólares pendiente del tráfico en Oriente Medio&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMivgFBVV95cUxPcGE5c0Q2aFd4LUt6eUFpblJhcGU3cXlEekFEV3cxaUh3NnBzYjNoYktIbHpuQURoRDNPQnM3Y0k5eW1iNXNkZXhMcjRPTEU1RmFuVW9jS0JmcXVQeWNKbTNzMFEtYlIwR1VleVhQVTBmUWtwYUZEQVNfX3dWNTJzUGRvNEx1RllqS0liZVJDbEc3MDl5dVkzbEZzYVlXWDNIVU00TU11SkNsQkY3b0cyeTVnOFppdk5wMXZPS2tn?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="dólar">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Tue, 06 Oct 2026 03:04:01 GMT</span>
+                    </div>
+                    <h2 class="card-title">Petróleo de Texas baja a 90 dólares tras el acuerdo del G7 para liberar las reservas</h2>
+                    <div class="card-summary">Petróleo de Texas baja a 90 dólares tras el acuerdo del G7 para liberar las reservas&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMitwFBVV95cUxPWndaOHhXMm9fZm1hYkNUWlFaVmtUUDA5bWd5U2ZFa3VkbjBDQXFaekl0UWZHZTVKWUM4dm10OGQxSlNmNUlvMlFVTnJKOVpoRlZMa2FycjVwX1F1YlNZaXRBb0JFcllQV1U1X1g2ZmR6MFI1dHBwc2VQZlNxUUxLRF9HZkliUmpyVVliVUJjdVBWRE9PR2NPclpCemU1LTR5VkFlXzlNS0M4M0tjNnpXb3VyMEtweG8?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="dólar">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa Financiera</span>
+                        <span class="card-date">Sat, 03 Oct 2026 14:10:38 GMT</span>
+                    </div>
+                    <h2 class="card-title">CAF ofrece mil millones de dólares para enfrentar el fenómeno de "El Niño" en la región</h2>
+                    <div class="card-summary">CAF ofrece mil millones de dólares para enfrentar el fenómeno de "El Niño" en la región&nbsp;&nbsp;</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Banca y Negocios</span>
+                    <a href="https://news.google.com/rss/articles/CBMiuAFBVV95cUxQUnpjaHFZQVlOTGU0cU1SNUpTRTY0ekJiU3V3OFVLR256dlRQdkZOQ1RNNmRJaEZYa2NCRTdmVmNCWnA3NE8yeDNCeHY5LUh1bVR5NDhUd2lKLW1LZGZqWFZsNXpyY0dUMEdrUVZTdmUzX3I5cHBZMzc0OEw0ODBKek82S2xkSTZjUllQU1lNbFFHcF8tallBTEtUWlY1Z2lWMF8tM2FiTFNNT0c5RTF4OUl3THp2R3ph?oc=5" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="ecoanalítica,alejandro grisanti,economía">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa y Menciones</span>
+                        <span class="card-date">2026-10-09T12:18:54Z</span>
+                    </div>
+                    <h2 class="card-title">Sin controles ni brecha cambiaria: el consenso de economistas para el futuro de Venezuela</h2>
+                    <div class="card-summary">Alejandro Grisanti PhD en Economía y fundador de Ecoanalítica. Eileen García octubre 9, 2026 8:10 am | Actualizado 8:10 am. Opciones&nbsp;...</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Google Alerts (Alerta 1)</span>
+                    <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.elnacional.com/especiales/la-refundacion-de-venezuela/economia/sin-controles-ni-brecha-cambiaria-el-consenso-de-economistas-para-el-futuro-de-venezuela/&ct=ga&cd=CAIyGjc1MGMwZjA2N2NmZDhlMjU6Y29tOmVzOlVT&usg=AOvVaw3H4mfCnkirUmS3xlJApJRj" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+            <article class="card" data-tags="ecoanalítica,alejandro grisanti">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">Prensa y Menciones</span>
+                        <span class="card-date">2026-10-09T12:13:18Z</span>
+                    </div>
+                    <h2 class="card-title">El camino a la recuperación económica en Venezuela: ¿qué pasos hay que seguir?</h2>
+                    <div class="card-summary">Sin embargo, para Alejandro Grisanti, director y fundador de la firma Ecoanalítica, ese giro hacia lo privado no será posible mientras siga el control&nbsp;...</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 Google Alerts (Alerta 1)</span>
+                    <a href="https://www.google.com/url?rct=j&sa=t&url=https://www.elnacional.com/especiales/la-refundacion-de-venezuela/economia/el-camino-a-la-recuperacion-economica-en-venezuela-que-pasos-hay-que-seguir/&ct=ga&cd=CAIyGjc1MGMwZjA2N2NmZDhlMjU6Y29tOmVzOlVT&usg=AOvVaw0ceTj2C6uxQVRkqZEP0RSd" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            
+        </main>
+    </div>
+
+    <!-- Script de Animación y Búsqueda -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const cards = document.querySelectorAll('.card');
+            const searchInput = document.getElementById('search-input');
+            const noResultsMsg = document.getElementById('no-results-msg');
+            let currentFilter = 'all';
+
+            function updateDisplay() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const tags = card.getAttribute('data-tags').split(',');
+                    const textContent = card.innerText.toLowerCase(); // Busca en título, resumen, fecha y fuente
+
+                    const matchesFilter = (currentFilter === 'all') || tags.includes(currentFilter);
+                    const matchesSearch = textContent.includes(searchTerm);
+
+                    if (matchesFilter && matchesSearch) {
+                        // Aparecer
+                        if (card.classList.contains('hidden')) {
+                            card.classList.remove('hidden');
+                            void card.offsetWidth; // Forzar redibujado para activar la transición
+                        }
+                        card.classList.remove('hiding');
+                        visibleCount++;
+                    } else {
+                        // Desvanecer (añadimos clase que hace shrink/fade out)
+                        card.classList.add('hiding');
+                        
+                        // Esperar a que termine la animación visual (0.3s) antes de quitar el espacio
+                        setTimeout(() => {
+                            if (card.classList.contains('hiding')) {
+                                card.classList.add('hidden');
+                            }
+                        }, 300);
+                    }
+                });
+
+                // Mostrar mensaje de "no hay resultados" si es necesario
+                setTimeout(() => {
+                    if (visibleCount === 0) {
+                        noResultsMsg.style.display = 'block';
+                    } else {
+                        noResultsMsg.style.display = 'none';
+                    }
+                }, 300);
+            }
+
+            // Eventos para los botones
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.getAttribute('data-filter');
+                    updateDisplay();
+                });
+            });
+
+            // Evento para la barra de búsqueda en tiempo real
+            searchInput.addEventListener('input', updateDisplay);
+        });
+    </script>
+</body>
+</html>
