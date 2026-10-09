@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hemeroteca | Ecoanalítica</title>
+    <style>
+        :root {
+            --bg-page: rgba(36, 28, 166, 0.06); 
+            --card-bg: #ffffff;
+            --brand-blue: #241ca6; 
+            --primary-dark: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: rgba(36, 28, 166, 0.15); 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-image: url('fondo.png'); 
+            background-color: var(--brand-blue);
+            background-size: cover;
+            background-position: center;
+            box-shadow: inset 0 0 0 1000px rgba(18, 14, 83, 0.7);
+            padding: 3.5rem 2rem;
+            text-align: center;
+            color: #ffffff;
+            border-bottom: 4px solid var(--brand-blue);
+        }
+
+        .header-logo {
+            max-width: 320px;
+            height: auto;
+            margin-bottom: 1rem;
+            mix-blend-mode: screen; 
+        }
+
+        .header-title {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #f8fafc;
+            text-transform: uppercase;
+        }
+
+        .meta-info {
+            display: inline-block;
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .filters-container {
+            max-width: 1100px;
+            margin: -2.5rem auto 1.5rem auto;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 10;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(36, 28, 166, 0.1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* --- Estilos del Nuevo Buscador --- */
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 20px 12px 40px;
+            border-radius: 25px;
+            border: 1px solid rgba(36, 28, 166, 0.2);
+            outline: none;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+        }
+
+        .search-input:focus {
+            border-color: var(--brand-blue);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(36, 28, 166, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background: rgba(36, 28, 166, 0.05);
+            border: 1px solid rgba(36, 28, 166, 0.2);
+            color: var(--brand-blue);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: capitalize;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(36, 28, 166, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--brand-blue);
+            color: #ffffff;
+            border-color: var(--brand-blue);
+            box-shadow: 0 4px 6px rgba(36, 28, 166, 0.2);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto 3rem auto;
+            padding: 0 2rem;
+            min-height: 50vh; /* Evita que el footer suba de golpe si no hay resultados */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.8rem;
+        }
+
+        /* --- Animaciones Suaves de las Tarjetas --- */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            
+            /* Esta es la clave para la transición fluida */
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(36, 28, 166, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 12px 20px -3px rgba(36, 28, 166, 0.15);
+        }
+
+        /* Clase temporal que da el efecto de desaparición */
+        .card.hiding {
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        /* Clase final que retira el espacio del HTML */
+        .hidden {
+            display: none !important;
+        }
+
+        .card-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(36, 28, 166, 0.08);
+        }
+
+        .badge {
+            background: rgba(36, 28, 166, 0.1);
+            color: var(--brand-blue);
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            line-height: 1.4;
+            color: var(--primary-dark);
+        }
+
+        .card-summary {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(36, 28, 166, 0.08);
+        }
+
+        .source-name {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .card-link {
+            text-decoration: none;
+            color: var(--brand-blue);
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        .card-link:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+        
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="Ecoanalítica" class="header-logo">
+        <h1 class="header-title">Hemeroteca Digital Automatizada</h1>
+        <div class="meta-info">
+            Última actualización: {{ fecha_actualizacion }} &nbsp;|&nbsp; Total artículos: {{ articulos|length }}
+        </div>
+    </header>
+
+    <div class="filters-container">
+        <!-- Buscador de texto en tiempo real -->
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar por título, contenido, fecha o medio...">
+        </div>
+
+        <!-- Botones generados dinámicamente -->
+        <div class="btn-group">
+            <button class="filter-btn active" data-filter="all">Todas</button>
+            {% for palabra in palabras_clave %}
+                <button class="filter-btn" data-filter="{{ palabra }}">{{ palabra }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="container">
+        <main class="grid" id="news-grid">
+            <div id="no-results-msg" class="no-results">
+                No se encontraron noticias con esos filtros de búsqueda.
+            </div>
+            
+            {% for art in articulos %}
+            <article class="card" data-tags="{{ art.tags }}">
+                <div>
+                    <div class="card-header-info">
+                        <span class="badge">{{ art.categoria }}</span>
+                        <span class="card-date">{{ art.fecha }}</span>
+                    </div>
+                    <h2 class="card-title">{{ art.titulo }}</h2>
+                    <div class="card-summary">{{ art.resumen }}</div>
+                </div>
+                <div class="card-footer">
+                    <span class="source-name">📰 {{ art.fuente }}</span>
+                    <a href="{{ art.enlace }}" target="_blank" rel="noopener noreferrer" class="card-link">Leer nota &rarr;</a>
+                </div>
+            </article>
+            {% endfor %}
+        </main>
+    </div>
+
+    <!-- Script de Animación y Búsqueda -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const cards = document.querySelectorAll('.card');
+            const searchInput = document.getElementById('search-input');
+            const noResultsMsg = document.getElementById('no-results-msg');
+            let currentFilter = 'all';
+
+            function updateDisplay() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const tags = card.getAttribute('data-tags').split(',');
+                    const textContent = card.innerText.toLowerCase(); // Busca en título, resumen, fecha y fuente
+
+                    const matchesFilter = (currentFilter === 'all') || tags.includes(currentFilter);
+                    const matchesSearch = textContent.includes(searchTerm);
+
+                    if (matchesFilter && matchesSearch) {
+                        // Aparecer
+                        if (card.classList.contains('hidden')) {
+                            card.classList.remove('hidden');
+                            void card.offsetWidth; // Forzar redibujado para activar la transición
+                        }
+                        card.classList.remove('hiding');
+                        visibleCount++;
+                    } else {
+                        // Desvanecer (añadimos clase que hace shrink/fade out)
+                        card.classList.add('hiding');
+                        
+                        // Esperar a que termine la animación visual (0.3s) antes de quitar el espacio
+                        setTimeout(() => {
+                            if (card.classList.contains('hiding')) {
+                                card.classList.add('hidden');
+                            }
+                        }, 300);
+                    }
+                });
+
+                // Mostrar mensaje de "no hay resultados" si es necesario
+                setTimeout(() => {
+                    if (visibleCount === 0) {
+                        noResultsMsg.style.display = 'block';
+                    } else {
+                        noResultsMsg.style.display = 'none';
+                    }
+                }, 300);
+            }
+
+            // Eventos para los botones
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.getAttribute('data-filter');
+                    updateDisplay();
+                });
+            });
+
+            // Evento para la barra de búsqueda en tiempo real
+            searchInput.addEventListener('input', updateDisplay);
+        });
+    </script>
+</body>
+</html>
